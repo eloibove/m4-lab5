@@ -9,9 +9,7 @@ from scipy import optimize as opt
 
 def compute_proj_camera(F, i):
     # Result 9.15 of MVG (v = 0, lambda = 1). It assumes P1 = [I|0]
-
-    ...
-
+    P=3
     return P
 
 def estimate_3d_points_2(P1, P2, xr1, xr2):
@@ -42,9 +40,9 @@ def estimate_3d_points_2(P1, P2, xr1, xr2):
 
 def compute_reproj_error(X, P1, P2, xr1, xr2):
     # Check if we need to change to homogeneous
-    dim,np = np.shape(X)
+    dim,N = np.shape(X)
     if dim == 3:
-        Xp = np.ones(4,dim)
+        Xp = np.ones(4,N)
         Xp[:,0:3] = X
         X = Xp
 
@@ -52,9 +50,13 @@ def compute_reproj_error(X, P1, P2, xr1, xr2):
     xpr1 = P1 @ X
     xpr2 = P2 @ X
 
+    # Change to euclidean
+    xpr1_e = xpr1[0:2,:]/xpr1[-1,:]
+    xpr2_e = xpr2[0:2,:]/xpr2[-1,:]
+
     # Diff between projected and computed points
-    diff1 = (xpr1-xr1)**2
-    diff2 = (xpr2-xr2)**2
+    diff1 = (xpr1_e-xr1)**2
+    diff2 = (xpr2_e-xr2)**2
 
     # Average
     error = np.sum(np.sum(diff1 + diff2))
