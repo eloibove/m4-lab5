@@ -41,9 +41,23 @@ def estimate_3d_points_2(P1, P2, xr1, xr2):
     return res
 
 def compute_reproj_error(X, P1, P2, xr1, xr2):
-    # project 3D points using P
+    # Check if we need to change to homogeneous
+    dim,np = np.shape(X)
+    if dim == 3:
+        Xp = np.ones(4,dim)
+        Xp[:,0:3] = X
+        X = Xp
 
-    ...
+    # Project 3D points using Pi
+    xpr1 = P1 @ X
+    xpr2 = P2 @ X
+
+    # Diff between projected and computed points
+    diff1 = (xpr1-xr1)**2
+    diff2 = (xpr2-xr2)**2
+
+    # Average
+    error = np.sum(np.sum(diff1 + diff2))
 
     return error
 
