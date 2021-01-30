@@ -9,7 +9,19 @@ from scipy import optimize as opt
 
 def compute_proj_camera(F, i):
     # Result 9.15 of MVG (v = 0, lambda = 1). It assumes P1 = [I|0]
-    P=3
+    # P' = [[e']_x F | e']
+
+    # Find e', epipole such that e'^T F = 0
+    et = mth.nullspace(F)
+
+    # Get [e']_x
+    e_skew = mth.hat_operator(et.T)
+
+    # Construct P
+    P = np.zeros((3,4))
+    P[0:3,0:3] = e_skew @ F
+    P[:,-1] = et.T
+
     return P
 
 def estimate_3d_points_2(P1, P2, xr1, xr2):
