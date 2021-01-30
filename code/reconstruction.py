@@ -12,15 +12,15 @@ def compute_proj_camera(F, i):
     # P' = [[e']_x F | e']
 
     # Find e', epipole such that e'^T F = 0
-    et = mth.nullspace(F)
+    et = np.array(mth.nullspace(F)).T
 
     # Get [e']_x
-    e_skew = mth.hat_operator(et.T)
+    e_skew = mth.hat_operator(et)
 
     # Construct P
     P = np.zeros((3,4))
     P[0:3,0:3] = e_skew @ F
-    P[:,-1] = et.T
+    P[:,-1] = et
 
     return P
 
@@ -71,7 +71,7 @@ def compute_reproj_error(X, P1, P2, xr1, xr2):
     diff2 = (xpr2_e-xr2)**2
 
     # Average
-    error = np.sum(np.sum(diff1 + diff2))
+    error = np.sum(np.sum(diff1 + diff2))/N
 
     return error
 
