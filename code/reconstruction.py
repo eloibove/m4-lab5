@@ -79,7 +79,8 @@ def compute_reproj_error(X, P1, P2, xr1, xr2):
 def transform(aff_hom, Xprj, cams_pr):
     # Algorithm 19.2 of MVG
 
-    ...
+    Xaff = np.linalg.inv(aff_hom) @ Xprj
+    cams_aff = cams_pr @ aff_hom
 
     return Xaff, cams_aff
 

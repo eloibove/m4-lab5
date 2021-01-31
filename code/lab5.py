@@ -110,9 +110,9 @@ def main(argv):
                     print("    Size of tracks:", len(tracks))
                     print("    Size of hash table of views:", len(hs_vs))
 
-                if h.debug_display:
-                    h.display_epilines(imgs[prev], imgs[i], x1, x2, F)
-                    h.show_matches(imgs[prev], imgs[i], x1, x2)
+                # if h.debug_display:
+                #     h.display_epilines(imgs[prev], imgs[i], x1, x2, F)
+                #     h.show_matches(imgs[prev], imgs[i], x1, x2)
 
             # compute projective cameras to use in projective reconstruction
             if i == 1:
@@ -127,6 +127,10 @@ def main(argv):
 
             # projective triangulation for 3D structure
             Xprj = rc.estimate_3d_points_2(cams_pr[i-1], cams_pr[i], xr1, xr2)
+            print(cams_pr[i-1])
+            print(cams_pr[i])
+            print(xr1)
+            print(xr2)
             if h.debug >= 0:
                 print('  Projective reconstruction estimated')
 
