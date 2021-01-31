@@ -17,14 +17,52 @@ def estimate_aff_hom(cams, vps):
     # Compose affine homography
     aff_hom = np.zeros((4,4))
     aff_hom[0:3,0:3] = np.eye(3)
-    aff_hom[3,0:4] = [-p[0], -p[1], -p[2], 1]
+    aff_hom[3,0:4] = [p[0], p[1], p[2], 1]
 
     return aff_hom
 
 
 def estimate_euc_hom(cams, vps):
     # make points homogeneous
-    
-    ...
+    u = np.array([vps[0,0], vps[0,1], 1])
+    v = np.array([vps[1,0], vps[1,1], 1])
+    z = np.array([vps[2,0], vps[2,1], 1])
+
+    # Build the matrix A
+    A = np.array([[u[0]*v[0], u[0]*v[1] + u[1]*v[0], u[0]*v[2] + u[2]*v[0], u[1]*v[1],
+                    u[1]*v[2] + u[2]*v[1], u[2]*v[2]],
+                    [u[0]*z[0], u[0]*z[1] + u[1]*z[0], u[0]*z[2] + u[2]*z[0], u[1]*z[1],
+                    u[1]*z[2] + u[2]*z[1], u[2]*z[2]],
+                    [v[0]*z[0], v[0]*z[1] + v[1]*z[0], v[0]*z[2] + v[2]*z[0], v[1]*z[1],
+                    v[1]*z[2] + v[2]*z[1], v[2]*z[2]],
+                    [0, 1, 0, 0, 0, 0],
+                    [1, 0, 0, -1, 0, 0]])
+
+    # Obtain the image of the absolute conic
+    w_vec = mth.nullspace(A) 
+    w = np.array([w_vec[0], w_vec[1], w_vec[2], 
+                  w_vec[1], w_vec[3], w_vec[4],
+                  w_vec[2], w_vec[4], w_vec[5]]).reshape(3,3)
+
+    # Obtain M matrix from P
+    M = cams[0:3,0:3]
+    AAT = np.linalg.inv(M.T @ w @ M)
+    A = scipy.linalg.cholesky(AAT)
+
+    # Build euc_hom
+    euc_hom = np.zeros((4,4))
+    euc_hom[0:3,0:3] = np.linalg.inv(A)
+    euc_hom[3,3] = 1
 
     return euc_hom
+
+
+
+
+
+
+
+
+
+
+
