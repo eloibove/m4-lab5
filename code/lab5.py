@@ -23,6 +23,10 @@ import vps as vp
 import autocalibration as ac
 import reconstruction as rc
 
+# setting random seed
+import random
+random.seed(42)
+
 with_intrinsics = True
 
 def main(argv):
