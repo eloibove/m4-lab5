@@ -86,10 +86,10 @@ def draw_lines(img1, img2, lines, x1, x2):
         img1 = cv2.circle(img1, tuple(pt1.astype(int)), 5, color, -1)
         img2 = cv2.circle(img2, tuple(pt2.astype(int)), 5, color, -1)
 
-        #cv2.imshow('epipolar lines and matches at img1', img1)
-        #cv2.imshow('epipolar lines and matches at img2', img2)
-        ## ASCII(space) = 32
-        #key = cv2.waitKey(0) & 0xFF 
+        cv2.imshow('epipolar lines and matches at img1', img1)
+        cv2.imshow('epipolar lines and matches at img2', img2)
+        
+        key = cv2.waitKey(0)
 
     return img1, img2
 
