@@ -71,7 +71,7 @@ def compute_reproj_error(X, P1, P2, xr1, xr2):
     diff2 = (xpr2_e-xr2)**2
 
     # Average
-    error = np.sum(np.sum(diff1 + diff2))/N
+    error = np.sum(np.sum(diff1 + diff2))/(2*N)
 
     return error
 
