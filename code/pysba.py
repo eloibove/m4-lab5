@@ -153,6 +153,30 @@ class PySBA:
 
 def adapt_format_pysba(tracks, cams):
 
-    ...
+    n_cams = len(cams)
+    n_points = len(tracks)
+    n_obs=n_cams*n_points
 
+    camera_params = np.zeros((n_cams,9))
+    points_3d = np.zeros((n_points,3))
+    camera_indices = np.zeros(n_obs, dtype=np.int32)
+    points_2d_indices = np.zeros(n_obs, dtype=np.int32)
+    points_2d = np.zeros((n_obs,2))
+
+
+    K = cams[0][0:3,0:3]
+    K_inv = np.linalg.inv(K)
+
+    for i in range(n_cams): 
+        R = np.matmul(K_inv, cams[i])
+        rot_vector, _ = cv2.Rodrigues(R[0:3,0:3])
+        camera_params[i,0:3] = rot_vector.ravel()
+        camera_params[i,3:6] = cams[i][:,3].T
+        camera_params[i,6:9] = [K[0,0], 0.0, 0.0]
+        for j in range(n_points):
+            points_3d[j, :] = tracks[j].pt[0:3]
+            points_2d[i*j+j,:] = tracks[j].ref_views[i]
+            camera_indices[i*j+j] = i
+            points_2d_indices[i*j+j] = j
+            
     return camera_params, points_3d, points_2d, camera_indices, points_2d_indices
