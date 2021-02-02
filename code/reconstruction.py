@@ -90,8 +90,89 @@ def transform(aff_hom, Xprj, cams_pr):
 
 def resection(tracks, i):
     # extract 3D-2D correspondences from tracks
+    # Space points
+    pts3d = []
+
+    # Image points
+    pts2d = []
+
+    # Get 3D - 2D correspondences from tracks
+    for t in tracks:
+        pts_3d.append(t.pt)
+        pts2d.append(t.ref_views[i])
+
+    # Convert 2D points to homogeneous coordinates
+    pts2d = homog(np.array(pts2d))
+
+    # Scale factors  
+    sx = np.std(pts2d[:, 0])/np.sqrt(2)
+    sy = np.std(pts2d[:, 1])/np.sqrt(2)
+
+    # Translation factors (subtract mean to points)
+    tx = np.mean(pts2d[:, 0])
+    ty = np.mean(pts2d[:, 1])
+
+    # Similarity transform for image points
+    T = np.array([[sx, 0, -tx],
+                  [0, sy, -ty],
+                  [0, 0, 1]])
+
     
-    ...
+    # Transform points
+    pt2d_n = pts2d @ T
+
+    pts3d = np.array(pts3d)
+    # Scale factors
+    sx = np.std(pts3d[:, 0])/np.sqrt(2)
+    sy = np.std(pts3d[:, 1])/np.sqrt(2)
+    sz = np.std(pts3d[:, 2])/np.sqrt(2)
+
+    # Translation factors (subtract mean to points)
+    tx = np.mean(pts3d[:, 0])
+    ty = np.mean(pts3d[:, 1])
+    tz = np.mean(pts3d[:, 2])
+
+    # Similarity transform for space points
+    U = np.array([[sx, 0, 0, -tx],
+                   [0, sy, 0, -ty],
+                   [0, 0, sz, -tz],
+                   [0, 0, 0, 1]])
+
+
+    pt3d_n = pts3d @ U
+
+    # Number of 2D image points
+    num_points = np.shape(pts2d)[0]
+
+    # Definition of matrix A, such that Ap = 0
+    A = np.zeros((2*num_points,12))
+
+    # Iterate through rows to build matrix
+    row = 0
+
+    for i in range(0, num_points):
+        # Image points
+        x2d = pt2d_n[i, :]
+        x3d = pt3d_n[i, :]
+        # Homogeneous coordinate of image points
+        w2d = -x2d[2]
+        # First row of equation 7.2 from MVG
+        A[row, :] = np.array([0, 0, 0, 0, #0 transposed
+                            #-wiXiT
+                            -w2d * x3d[0], -w2d * x3d[1], -w2d * x3d[2], -w2d * x3d[3], 
+                            # yiXiT
+                            x2d[1] * x3d[0], x2d[1] * x3d[1], x2d[1] * x3d[2], x2d[1] * x3d[3]])
+        # Second row of equation 7.2 from MVG
+        A[row+1, :] = np.array([w2d * x3d[0], w2d * x3d[1], w2d * x3d[2], w2d * x3d[3], #wiXiT
+                                0, 0, 0, 0, # 0 transposed
+                                -x2d[0] * x3d[0], -x2d[0] * x3d[1], -x2d[0] * x3d[2], -x2d[0] * x3d[3]]) #-xiXiT
+        row = row + 2
+    # SVD of matrix A
+    U, D, Vt = np.linalg.svd(A)
+    # Camera projection matrix P (we know Vt.T contains the entries P1 P2 P3 stacked)
+    P = Vt.T[:, -1].reshape((3,4))
+    # Denormalization
+    P = np.linalg.inv(T) @ P @ U
 
     return P
 
