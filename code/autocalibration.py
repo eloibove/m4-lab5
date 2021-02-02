@@ -64,9 +64,8 @@ def estimate_aff_hom_F(cams, vps, F):
     #Algorithm 13.1 of MVG
 
     # Get epipolar line and compute A
-    ep = mth.nullspace(F.T)
+    ep = cams[1][:,-1]
     A = mth.hat_operator(ep) @ F
-    ep = ep.reshape((3,))
 
     # Obtain 3D vanishing points
     vps_3D = rc.estimate_3d_points_2(cams[0], cams[1], vps[0].T, vps[1].T)
@@ -87,7 +86,9 @@ def estimate_aff_hom_F(cams, vps, F):
     v = np.linalg.solve(M,B)
 
     # Return the matrix
-    aff_hom = A - ep @ v.T
+    aff_hom = np.zeros((4,4))
+    aff_hom[0:3,0:3] = A - ep @ v.T
+    aff_hom[3,3] = 1
 
     return aff_hom
 
