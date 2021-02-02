@@ -54,8 +54,8 @@ def compute_reproj_error(X, P1, P2, xr1, xr2):
     # Check if we need to change to homogeneous
     dim,N = np.shape(X)
     if dim == 3:
-        Xp = np.ones(4,N)
-        Xp[:,0:3] = X
+        Xp = np.ones((4,N))
+        Xp[0:3,:] = X
         X = Xp
 
     # Project 3D points using Pi
@@ -81,6 +81,9 @@ def transform(aff_hom, Xprj, cams_pr):
 
     Xaff =  aff_hom @ Xprj
     cams_aff = cams_pr @ np.linalg.inv(aff_hom)
+    #Xaff =  np.linalg.inv(aff_hom) @ Xprj
+    #cams_aff = cams_pr @ aff_hom
+    Xaff[:,:]=Xaff[:,:]/Xaff[3,:]
 
     return Xaff, cams_aff
 

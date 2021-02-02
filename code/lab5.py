@@ -26,9 +26,9 @@ import reconstruction as rc
 
 # setting random seed
 import random
-random.seed(42)
+#random.seed(42)
 
-with_intrinsics = True
+with_intrinsics = False
 
 def main(argv):
     # usage

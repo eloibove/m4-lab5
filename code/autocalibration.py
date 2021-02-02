@@ -43,12 +43,14 @@ def estimate_euc_hom(cams, vps):
     w = np.array([w_vec[0], w_vec[1], w_vec[2], 
                   w_vec[1], w_vec[3], w_vec[4],
                   w_vec[2], w_vec[4], w_vec[5]]).reshape(3,3)
+    #print(w)
 
     # Obtain M matrix from P
     M = cams[0:3,0:3]
     AAT = np.linalg.inv(M.T @ w @ M)
     A = scipy.linalg.cholesky(AAT)
-
+    #print(A/A[2,2])
+    
     # Build euc_hom
     euc_hom = np.zeros((4,4))
     euc_hom[0:3,0:3] = np.linalg.inv(A)
