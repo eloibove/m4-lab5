@@ -29,6 +29,7 @@ import random
 #random.seed(42)
 
 with_intrinsics = False
+vp_bundle = False
 
 def main(argv):
     # usage
@@ -152,23 +153,25 @@ def main(argv):
             # Affine rectification
             vps.append(vp.estimate_vps(imgs[i]))
 
-            #Bundle adjustment on vanishing points
-            vps_3D = rc.estimate_3d_points_2(cams_pr[i-1], cams_pr[i], vps[i-1].T, vps[i].T)
-            vps_3D = vps_3D.T[:,0:3]/vps_3D.T[:,-1]
-            cams_ba, VP_ba, vp_ba, cam_idxs, vp_idxs = ba.adapt_format_vp_pysba([vps[i-1],vps[i]],vps_3D,[cams_pr[i-1],cams_pr[i]])
-            vp_badj = ba.PySBA(cams_ba, VP_ba, vp_ba, cam_idxs, vp_idxs)
-            cams_ba, Xvp = vp_badj.bundleAdjust()
-            print("    Triangulated VPs:", vps_3D)
-            print("    Projective cameras:", cams_pr)
-            print("    VPs corrected with bundle adjustment:", Xvp)
-            print("    Cameras corrected with bandle adjustment:", cams_ba)
+            if vp_bundle:
+                #Bundle adjustment on vanishing points
+                vps_3D = rc.estimate_3d_points_2(cams_pr[i-1], cams_pr[i], vps[i-1].T, vps[i].T)
+                vps_3D = vps_3D.T[:,0:3]/vps_3D.T[:,-1]
+                cams_ba, VP_ba, vp_ba, cam_idxs, vp_idxs = ba.adapt_format_vp_pysba([vps[i-1],vps[i]],vps_3D,[cams_pr[i-1],cams_pr[i]])
+                vp_badj = ba.PySBA(cams_ba, VP_ba, vp_ba, cam_idxs, vp_idxs)
+                cams_ba, Xvp = vp_badj.bundleAdjust()
+                print("    Triangulated VPs:", vps_3D)
+                print("    Projective cameras:", cams_pr)
+                print("    VPs corrected with bundle adjustment:", Xvp)
+                print("    Cameras corrected with bandle adjustment:", cams_ba)
 
-            # TODO Estimate homography that makes an affine rectification
-            # With the vanishing points, the plane at the infinity is computed. 
-            # Then the affine homography is built with the coordinates of the infinity plane
-
-            #aff_hom = ac.estimate_aff_hom([cams_pr[i-1], cams_pr[i]], [vps[i-1], vps[i]])
-            aff_hom = ac.estimate_aff_hom(cams_ba, Xvp, vp_3d=True)
+                aff_hom = ac.estimate_aff_hom(cams_ba, Xvp, vp_3d=True)
+            else:
+                # TODO Estimate homography that makes an affine rectification
+                # With the vanishing points, the plane at the infinity is computed. 
+                # Then the affine homography is built with the coordinates of the infinity plane
+                aff_hom = ac.estimate_aff_hom([cams_pr[i-1], cams_pr[i]], [vps[i-1], vps[i]])
+            
 
             # TODO Transform 3D points and cameras to affine space
             Xaff, cams_aff = rc.transform(aff_hom, Xprj, cams_pr)
