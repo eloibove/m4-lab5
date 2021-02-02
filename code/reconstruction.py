@@ -12,7 +12,7 @@ def compute_proj_camera(F, i):
     # P' = [[e']_x F | e']
 
     # Find e', epipole such that e'^T F = 0
-    et = np.array(mth.nullspace(F)).T
+    et = np.array(mth.nullspace(F.T))
 
     # Get [e']_x
     e_skew = mth.hat_operator(et)
@@ -20,7 +20,7 @@ def compute_proj_camera(F, i):
     # Construct P
     P = np.zeros((3,4))
     P[0:3,0:3] = e_skew @ F
-    P[:,-1] = et
+    P[:,-1] = et.T
 
     return P
 

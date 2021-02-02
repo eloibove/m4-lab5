@@ -5,12 +5,14 @@ import maths as mth
 import fundamental as fd
 
 
-def estimate_aff_hom(cams, vps):
-    # Triangulate all vanishing points
-    vps_3D = rc.estimate_3d_points_2(cams[0], cams[1], vps[0].T, vps[1].T)
+def estimate_aff_hom(cams, vps, vp_3d=False):
+
+    if not vp_3d:
+        # Triangulate all vanishing points
+        vps = rc.estimate_3d_points_2(cams[0], cams[1], vps[0].T, vps[1].T)
 
     # Estimate p
-    U, D, Vt = np.linalg.svd(vps_3D.T)
+    U, D, Vt = np.linalg.svd(vps.T)
     p = Vt.T[:, -1]
     p = p/p[-1]
 
@@ -20,6 +22,7 @@ def estimate_aff_hom(cams, vps):
     aff_hom[3,0:4] = [p[0], p[1], p[2], 1]
 
     return aff_hom
+
 
 
 def estimate_euc_hom(cams, vps):
@@ -46,9 +49,9 @@ def estimate_euc_hom(cams, vps):
     #print(w)
 
     # Obtain M matrix from P
-    M = cams[0:3,0:3]
+    M = cams[:,0:3]
     AAT = np.linalg.inv(M.T @ w @ M)
-    A = scipy.linalg.cholesky(AAT)
+    A = np.linalg.cholesky(AAT)
     #print(A/A[2,2])
     
     # Build euc_hom
