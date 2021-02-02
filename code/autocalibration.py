@@ -62,7 +62,37 @@ def estimate_euc_hom(cams, vps):
     return euc_hom
 
 
+def estimate_aff_hom_F(cams, vps, F):
+    #Extra: estimate affine homography from F
+    #Algorithm 13.1 of MVG
 
+    # Get epipolar line and compute A
+    ep = mth.nullspace(F.T)
+    A = mth.hat_operator(ep) @ F
+    ep = ep.reshape((3,))
+
+    # Obtain 3D vanishing points
+    vps_3D = rc.estimate_3d_points_2(cams[0], cams[1], vps[0].T, vps[1].T)
+    vps_3D = vps_3D[0:3,0:3]/vps_3D[-1,:]
+
+    # Assemble M and b
+    M = []
+    B = []
+    for i in range(0,3):
+        M.append(vps_3D[i,:].T) 
+        xp = np.array([vps[1][i,0],vps[1][i,1],1]) 
+        x = np.array([vps[0][i,0],vps[0][i,1],1])
+        ax = A @ x
+        b = (np.cross(xp,ax).T @ np.cross(xp,ep)) / (np.cross(xp,ep).T @ np.cross(xp,ep))
+        B.append(b)
+
+    # Solve the linear problem
+    v = np.linalg.solve(M,B)
+
+    # Return the matrix
+    aff_hom = A - ep @ v.T
+
+    return aff_hom
 
 
 
